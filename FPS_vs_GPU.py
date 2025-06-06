@@ -1,12 +1,16 @@
-import math
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
-# Load data
-x_train = np.array([150, 200, 250, 300, 350, 400, 500])  # features -> GPU price
-y_train = np.array([50, 65, 75, 90, 100, 110, 130])     # target -> FPS
+# === STEP 1: Load your CSV file ===
+df = pd.read_csv('gpu_fps_data.csv')
 
-# Normalize features to prevent overflow
+# === STEP 2: Extract features and target ===
+x_train = df['Price (USD $178)'].to_numpy()
+y_train = df['FPS'].to_numpy()
+
+# === STEP 3: Normalize features ===
 x_mean = np.mean(x_train)
 x_std = np.std(x_train)
 x_norm = (x_train - x_mean) / x_std
