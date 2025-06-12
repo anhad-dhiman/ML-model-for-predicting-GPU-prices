@@ -2,10 +2,15 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import os
 
 # === STEP 1: Load and clean your CSV file ===
+# Get the directory where this script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+csv_path = os.path.join(script_dir, 'data.csv')
+
 # Load CSV without headers since your file doesn't have proper column names
-df = pd.read_csv('gpu_fps_data.csv', header=None)
+df = pd.read_csv(csv_path, header=None)
 
 # Display the raw data to understand structure
 print("Raw CSV data:")
@@ -44,7 +49,7 @@ print(f"\nTraining data shape: X={x_train.shape}, y={y_train.shape}")
 print(f"Price range: ${x_train.min():.2f} - ${x_train.max():.2f}")
 print(f"FPS range: {y_train.min():.1f} - {y_train.max():.1f}")
 
-# === STEP 3: Normalize features ===
+# === STEP 3: Z-score Normalize features ===
 x_mean = np.mean(x_train)
 x_std = np.std(x_train)
 x_norm = (x_train - x_mean) / x_std
@@ -89,7 +94,9 @@ def gradient_descent(x, y, w_in, b_in, alpha, num_iters, cost_function, gradient
     for i in range(num_iters):
         # Calculate the derivative for this step
         dj_dw, dj_db = gradient_function(x, y, w, b)
-        
+            #gradient_function is just a parameter name in gradient_descent.
+            # compute_derivative is the actual function that calculates the gradients.
+            # You can pass any function that matches the expected signature (x, y, w, b) → (dj_dw, dj_db).   
         # Update parameters
         w = w - alpha * dj_dw
         b = b - alpha * dj_db
@@ -104,7 +111,21 @@ def gradient_descent(x, y, w_in, b_in, alpha, num_iters, cost_function, gradient
             print(f"Iteration {i:4}: Cost {J_history[-1]:0.2e} ",
                   f"dj_dw: {dj_dw: 0.3e}, dj_db: {dj_db: 0.3e}  ",
                   f"w: {w: 0.3e}, b:{b: 0.5e}")
-    
+        
+        # Convergence check - simple version
+        # Conservative (strict): 0.01% of final cost
+        # tolerance = final_cost * 0.0001
+
+        # # Moderate (recommended): 0.1% of final cost  
+        # tolerance = final_cost * 0.001
+
+        # # Relaxed: 1% of final cost
+        # tolerance = final_cost * 0.01
+        tolerance = 0.000001
+        if i > 0 and abs(J_history[i] - J_history[i-1]) < tolerance:
+            print(f"Converged at iteration {i}")
+            break
+            
     return w, b, J_history, p_history
 
 # Initialize starting values
@@ -126,7 +147,7 @@ b_original = b_final - (w_final * x_mean / x_std)
 print(f"Final model (original scale): w = {w_original:.6f}, b = {b_original:.4f}")
 
 # Prediction
-gpu_price = 318
+gpu_price = 300
 predicted_fps = w_original * gpu_price + b_original
 print(f"Predicted FPS for ${gpu_price} GPU: {predicted_fps:.2f}")
 
